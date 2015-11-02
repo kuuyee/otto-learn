@@ -1,0 +1,36 @@
+2015/10/30 17:48:32 [INFO] KuuYee Otto version: 0.0.1 dev 
+panic: [INFO] KuuYee Otto version: 0.0.1 dev 
+
+goroutine 1 [running]:
+log.Panicf(0x752c50, 0x24, 0xc08205fda0, 0x3, 0x3)
+	c:/go/src/log/log.go:314 +0xd7
+main.wrappedMain(0x72e950)
+	E:/go/src/otto-learn/main.go:88 +0x21e
+main.realMain(0x0)
+	E:/go/src/otto-learn/main.go:83 +0xd2c
+main.main()
+	E:/go/src/otto-learn/main.go:18 +0x26
+
+goroutine 2 [runnable]:
+runtime.forcegchelper()
+	c:/go/src/runtime/proc.go:90
+runtime.goexit()
+	c:/go/src/runtime/asm_amd64.s:2232 +0x1
+
+goroutine 3 [runnable]:
+runtime.bgsweep()
+	c:/go/src/runtime/mgc0.go:82
+runtime.goexit()
+	c:/go/src/runtime/asm_amd64.s:2232 +0x1
+
+goroutine 4 [runnable]:
+runtime.runfinq()
+	c:/go/src/runtime/malloc.go:712
+runtime.goexit()
+	c:/go/src/runtime/asm_amd64.s:2232 +0x1
+
+goroutine 5 [runnable]:
+os/signal.loop()
+	c:/go/src/os/signal/signal_unix.go:19
+created by os/signal.init·1
+	c:/go/src/os/signal/signal_unix.go:27 +0x3c
