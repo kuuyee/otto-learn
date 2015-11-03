@@ -14,11 +14,11 @@
 package app
 
 import (
-	_ "github.com/hashicorp/otto/appfile"
+	"github.com/hashicorp/otto/appfile"
 	//"github.com/hashicorp/otto/context"
-	_ "github.com/hashicorp/otto/foundation"
-	_ "github.com/hashicorp/otto/ui"
-	_ "github.com/kuuyee/otto-learn/context"
+	"github.com/hashicorp/otto/ui"
+	"github.com/kuuyee/otto-learn/context"
+	"github.com/kuuyee/otto-learn/foundation"
 )
 
 // App接口，必须实现(app type,infra type,infra flavor)这三个元数据
@@ -45,6 +45,74 @@ type App interface {
 
 // Context是操作应用的上下文.这里有些字段只是用来操作某一种操作
 type Context struct {
+	context.Shared
+
+	CompileResult *CompileResult
+
+	// Action是一个子动作
+	//
+	// ActionArgs是动作的参数列表
+	//
+	// 只能被当前调用的Infra的设置
+	Action     string
+	ActionArgs []string
+
+	// Dir是编译时可用来做持久化存储的目录。当编译完成
+	// 时，就清理这个目录
+	Dir string
+
+	// 缓存目录
+	CacheDir string
+
+	// 单一Appfile本地数据存储
+	// 编译后不清楚
+	LocalDir string
+
+	// Tuple是foundation用的元数据
+	Tuple Tuple
+
+	// appfile中应用配置本身
+	Application *appfile.Application
+
+	// DevDepFragment用来填充开发依赖，Vagrantfile片段。
+	// 只在编译期调用。
+	DevDepFragments []string
+
+	// DevIPAddress 是本地IP地址，用在开发环境
+	//
+	// 只在app是root应用时可用
+	DevIPAddress string
 }
 
-type CompileResult struct{}
+// RouteName实现了router.Context接口，所以我们能用Router
+func (c *Context) RouteName() string {
+	return c.Action
+}
+
+// RouteName实现了router.Context接口，所以我们能用Router
+func (c *Context) RouteArgs() []string {
+	return c.ActionArgs
+}
+
+// RouteName实现了router.Context接口，所以我们能用Router
+func (c *Context) UI() ui.Ui {
+	return c.UI()
+}
+
+type CompileResult struct {
+	// Version是编译结构的版本。纯元数据
+	// app本身应该直接使用某些特性to run
+	Version uint32 `json:"version"`
+
+	// FoundationConfig 配置otto各种foundation元素
+	FoundationConfig foundation.Config `json:"foundation_config"`
+
+	// DevDepFragmentPath 是Vagrantfile碎片路径，
+	// 增加依赖是加入Vagrantfile文件中
+	DevdepFragmentPath string `json:"dev_dep_fragment_path"`
+
+	// FoundationResults 是foundation的编译结果
+	//
+	// Otto核心，如果有任何值将忽略
+	FoundationResults map[string]*foundation.CompileResult `json:"foundation_results"`
+}
