@@ -60,8 +60,8 @@ IFS=$OLDIFS
 # Copy our OS/Arch to the bin/ directory
 DEV_PLATFORM="./pkg/$(go env GOOS)_$(go env GOARCH)"
 for F in $(find ${DEV_PLATFORM} -mindepth 1 -maxdepth 1 -type f); do
-    cp ${F} bin/
-    cp ${F} ${MAIN_GOPATH}/bin/
+#    cp ${F} bin/
+    cp ${F} ${MAIN_GOPATH}/bin/otto-learn.exe
 done
 
 if [ "${OTTO_DEV}x" = "x" ]; then
