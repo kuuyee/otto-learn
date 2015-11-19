@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/hashicorp/go-checkpoint"
-	//"github.com/hashicorp/otto/command"
+	"github.com/kuuyee/otto-learn/command"
 )
 
 func init() {
@@ -55,4 +55,25 @@ func runCheckpoint(c *Config) {
 	}
 
 	checkpointResult <- resp
+}
+
+// commandVersionCheck实现command.VersionCheckFunc，用来做版本检查
+func commandVersionCheck() (command.VersionCheckInfo, error) {
+	// 等待获取结果
+	info := <-checkpointResult
+	if info == nil {
+		var zero command.VersionCheckInfo
+		return zero, nil
+	}
+
+	// 构建我们收到的版本输出
+	alerts := make([]string, len(info.Alerts))
+	for i, a := range info.Alerts {
+		alerts[i] = a.Message
+	}
+	return command.VersionCheckInfo{
+		Outdated: info.Outdated,
+		Lastest:  info.CurrentVersion,
+		Alerts:   alerts,
+	}, nil
 }

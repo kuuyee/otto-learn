@@ -105,6 +105,16 @@ func init() {
 				Detectors: Detectors,
 			}, nil
 		},
+
+		"version": func() (cli.Command, error) {
+			return &command.VersionCommand{
+				Meta:              meta,
+				Reversion:         GitCommit,
+				Version:           Version,
+				VersionPrerelease: VersionPrerelease,
+				CheckFunc:         commandVersionCheck,
+			}, nil
+		},
 	}
 }
 
