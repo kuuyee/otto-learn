@@ -19,6 +19,7 @@ func configFile() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	fmt.Printf("[KuuYee]====> homedir: %s",dir)
 	return filepath.Join(dir, "otto.rc"), nil
 }
 
