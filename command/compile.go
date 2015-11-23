@@ -3,6 +3,7 @@ package command
 import (
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/hashicorp/otto/appfile"
@@ -31,11 +32,13 @@ func (c *CompileCommand) Run(args []string) int {
 	ui := c.OttoUi()
 	ui.Header("装载 Appfile...")
 
+	fmt.Printf("[KuuYee]====> flagAppfile: %+v\n", flagAppfile)
 	app, appPath, err := loadAppfile(flagAppfile)
 	if err != nil {
 		c.Ui.Error(err.Error())
 		return 1
 	}
+	fmt.Printf("[KuuYee]====> appPath: %+v\n", appPath)
 
 	// 如果没有Appfile，告诉用户发生了什么
 	if app == nil {
@@ -54,7 +57,9 @@ func (c *CompileCommand) Run(args []string) int {
 		c.Ui.Error(err.Error())
 		return 1
 	}
+	fmt.Printf("[KuuYee]====> dataDir: %+v\n", dataDir)
 	detectorDir := filepath.Join(dataDir, DefaultLocalDataDetectorDir)
+	fmt.Printf("[KuuYee]====> detectorDir: %+v\n", detectorDir)
 	log.Printf("[DEBUG] loading detectors from: %s", detectorDir)
 	detectConfig, err := detect.ParseDir(detectorDir)
 	if err != nil {
@@ -63,12 +68,14 @@ func (c *CompileCommand) Run(args []string) int {
 	}
 	if detectConfig == nil {
 		detectConfig = &detect.Config{}
+		fmt.Printf("[KuuYee]====> detectConfig: %+v\n", detectConfig)
 	}
 	err = detectConfig.Merge(&detect.Config{Detectors: c.Detectors})
 	if err != nil {
 		c.Ui.Error(err.Error())
 		return 1
 	}
+	fmt.Printf("[KuuYee]====> detectConfig: %+v\n", detectConfig.Detectors)
 
 	// 装载默认Appfile，我们可以合并任何的默认
 	// appfile到已经装载的Appfile
@@ -78,6 +85,7 @@ func (c *CompileCommand) Run(args []string) int {
 			"装载Appfile报错：%s", err))
 		return 1
 	}
+	fmt.Printf("[KuuYee]====> appDef: %+v\n", appDef)
 
 	// 如果没有加载到appfile，那么认为没有可用的应用
 	if app == nil && appDef.Application.Type == "" {
@@ -94,6 +102,7 @@ func (c *CompileCommand) Run(args []string) int {
 		}
 	}
 	app = appDef
+	fmt.Printf("[KuuYee]====> app: %+v\n", app)
 
 	// 编译Appfile
 	ui.Header("获取所有的Appfile依赖...")
@@ -123,6 +132,7 @@ func (c *CompileCommand) Run(args []string) int {
 	ui.Header("编译...")
 	ui.Message(fmt.Sprintf(
 		"Application:   %s (%s)",
+		app.Application.Name,
 		app.Application.Type))
 	ui.Message(fmt.Sprintf("项目：    %s", app.Project.Name))
 	ui.Message(fmt.Sprintf(
@@ -162,15 +172,67 @@ func (c *CompileCommand) Help() string {
 func (c *CompileCommand) compileCallback(ui ui.Ui) func(appfile.CompileEvent) {
 	return func(raw appfile.CompileEvent) {}
 }
+
+// 返回装载任何appfile.File的拷贝，否则返回nil,自从Otto能够
+// 发现app类型，这是有效的。还能够返回appfile所在目录信息，就是
+// 当前WD目录(没有发现appfile)
 func loadAppfile(flagAppfile string) (*appfile.File, string, error) {
-	return nil, "", nil
+	appfilePath, err := findAppfile(flagAppfile)
+	if err != nil {
+		return nil, "", err
+	}
+
+	if appfilePath == "" {
+		wd, err := os.Getwd()
+		if err != nil {
+			return nil, "", err
+		}
+		return nil, wd, nil
+	}
+	app, err := appfile.ParseFile(appfilePath)
+	if err != nil {
+		return nil, "", err
+	}
+	return app, filepath.Dir(app.Path), nil
 }
 
+// findAppfile返回已存在的Appfile所在路径，依赖于检查flag值结果进行判断
+// 如果flag是空，返回空
 func findAppfile(flag string) (string, error) {
-	return "", nil
+	// 首先，如果在命令行指定了appfile，那么我们就要验证是否存在
+	if flag != "" {
+		fi, err := os.Stat(flag)
+		if err != nil {
+			return "", fmt.Errorf("装载Appfile报错：%s", err)
+		}
+
+		if fi.IsDir() {
+			return findAppfileInDir(flag), nil
+		} else {
+			return flag, nil
+		}
+	}
+
+	// 检索当前目录
+	wd, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("加载当前目录报错: %s", err)
+	}
+
+	return findAppfileInDir(wd), nil
 }
 
+// findAppfileInDir 返回一个目录，首先查找默认的appfile目录，否则查找
+// 其它能找到的appfile
 func findAppfileInDir(path string) string {
+	if _, err := os.Stat(filepath.Join(path, DefaultAppfile)); err == nil {
+		return filepath.Join(path, DefaultAppfile)
+	}
+	for _, aaf := range AltAppfiles {
+		if _, err := os.Stat(filepath.Join(path, aaf)); err == nil {
+			return filepath.Join(path, aaf)
+		}
+	}
 	return ""
 }
 

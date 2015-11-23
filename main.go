@@ -92,7 +92,7 @@ func wrappedMain() int {
 
 	// 载入配置
 	config := BuiltinConfig
-	fmt.Printf("[KuuYee]====> config: %+v",config)
+	fmt.Printf("[KuuYee]====> config: %+v\n", config)
 
 	// 运行检查点
 	go runCheckpoint(&config)
