@@ -60,3 +60,29 @@ type CoreConfig struct {
 	// Ui 用来于用户交互
 	Ui ui.Ui
 }
+
+// NewCore创建一个core
+//
+// 一旦调用这个函数，since the Core may use parts of it without deep copying.
+// CoreConfig不能再被使用和更改。
+func NewCore(c *CoreConfig) (*Core, error) {
+	return &Core{
+		appfile:         nil,
+		appfileCompiled: nil,
+		apps:            nil,
+		dir:             nil,
+		infras:          nil,
+		foundationMap:   nil,
+		dataDir:         "",
+		localDir:        "",
+		compileDir:      "",
+		ui:              c.Ui,
+	}, nil
+}
+
+// 编译任务，编译Appfile下所有的结果数据
+func (c *Core) Compile() error {
+	// 获取infra实现
+	//infra,infraCtx,err:=c.infras
+	return nil
+}
