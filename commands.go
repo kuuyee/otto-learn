@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	_ "fmt"
 	"os"
 	"os/signal"
 
@@ -74,7 +74,7 @@ func init() {
 	apps.Add(appRuby.Tuples.Map(app.StructFactory(new(appRuby.App))))
 
 	foundations := foundationConsul.Tuples.Map(foundation.StructFactory(new(foundationConsul.Foundation)))
-	fmt.Println(foundations)
+	//fmt.Println(foundations)
 
 	meta := command.Meta{
 		CoreConfig: &otto.CoreConfig{
@@ -86,7 +86,7 @@ func init() {
 		},
 		Ui: Ui,
 	}
-	fmt.Println(meta)
+	//fmt.Println(meta)
 
 	CommandsInclude = []string{
 		"compile",

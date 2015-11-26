@@ -25,7 +25,7 @@ type Shared struct {
 	InstallDir string
 
 	// appfile
-	Appfile appfile.File
+	Appfile *appfile.File
 
 	// FoundationDirs是放置各种基础脚本的目录
 	//

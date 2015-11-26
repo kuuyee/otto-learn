@@ -1,12 +1,14 @@
 package otto
 
 import (
-	_ "fmt"
+	"fmt"
+	"path/filepath"
+
 	"github.com/hashicorp/otto/appfile"
 	"github.com/hashicorp/otto/directory"
-	//"github.com/hashicorp/otto/infrastructure"
 	"github.com/hashicorp/otto/ui"
 	"github.com/kuuyee/otto-learn/app"
+	"github.com/kuuyee/otto-learn/context"
 	"github.com/kuuyee/otto-learn/foundation"
 	"github.com/kuuyee/otto-learn/infrastructure"
 )
@@ -67,15 +69,15 @@ type CoreConfig struct {
 // CoreConfig不能再被使用和更改。
 func NewCore(c *CoreConfig) (*Core, error) {
 	return &Core{
-		appfile:         nil,
-		appfileCompiled: nil,
-		apps:            nil,
-		dir:             nil,
-		infras:          nil,
-		foundationMap:   nil,
-		dataDir:         "",
-		localDir:        "",
-		compileDir:      "",
+		appfile:         c.Appfile.File,
+		appfileCompiled: c.Appfile,
+		apps:            c.Apps,
+		dir:             c.Directory,
+		infras:          c.Infrastructures,
+		foundationMap:   c.Foundations,
+		dataDir:         c.DataDir,
+		localDir:        c.LocalDir,
+		compileDir:      c.CompileDir,
 		ui:              c.Ui,
 	}, nil
 }
@@ -83,6 +85,118 @@ func NewCore(c *CoreConfig) (*Core, error) {
 // 编译任务，编译Appfile下所有的结果数据
 func (c *Core) Compile() error {
 	// 获取infra实现
-	//infra,infraCtx,err:=c.infras
+	infra, infraCtx, err := c.infra()
+	if err != nil {
+		return err
+	}
+
+	// 取得所有foundation实现(和infra关联的)
+	foundcations, foundationCtxs, err := c.foundations()
+
+	fmt.Println(infra, infraCtx, foundcations, foundationCtxs)
+
 	return nil
+}
+
+func (c *Core) infra() (infrastructure.Infrastructure, *infrastructure.Context, error) {
+	// 取得infrastructure配置
+	config := c.appfile.ActiveInfrastructure()
+	if config == nil {
+		return nil, nil, fmt.Errorf(
+			"infrastructure在Appfile中没找到： %s", c.appfile.Project.Infrastructure)
+	}
+
+	// 获取infrastructure工厂
+	f, ok := c.infras[config.Type]
+	if !ok {
+		return nil, nil, fmt.Errorf(
+			"infrastructure类型不支持：%s",
+			config.Type)
+	}
+
+	// 开始实现infrastructure
+	infra, err := f()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// 数据输出目录
+	outputDir := filepath.Join(
+		c.compileDir, fmt.Sprintf("infra-%s", c.appfile.Project.Infrastructure))
+
+	// Build the context
+	return infra, &infrastructure.Context{
+		Dir:   outputDir,
+		Infra: config,
+		Shared: context.Shared{
+			Appfile:    c.appfile,
+			InstallDir: filepath.Join(c.dataDir, "binaries"),
+			Directory:  c.dir,
+			Ui:         c.ui,
+		},
+	}, nil
+}
+
+func (c *Core) foundations() ([]foundation.Foundation, []*foundation.Context, error) {
+	// 取得infrastructure配置
+	config := c.appfile.ActiveInfrastructure()
+	if config == nil {
+		return nil, nil, fmt.Errorf(
+			"infrastructure在appfile中没找到：%s", c.appfile.Project.Infrastructure)
+	}
+
+	// 如果没有foundation，返回nil
+	if len(config.Foundations) == 0 {
+		return nil, nil, nil
+	}
+
+	// 给列表创建一个数组
+	fs := make([]foundation.Foundation, 0, len(config.Foundations))
+	ctxs := make([]*foundation.Context, 0, cap(fs))
+	for _, f := range config.Foundations {
+		// The tuple we're looking for is the foundation type, the
+		// infrastructure type, and the infrastructure flavor. Build that
+		// tuple.
+		tuple := foundation.Tuple{
+			Type:        f.Name,
+			Infra:       config.Type,
+			InfraFlavor: config.Flavor,
+		}
+
+		// 查找匹配的foundation
+		fun := foundation.TupleMap(c.foundationMap).Lookup(tuple)
+		if fun == nil {
+			return nil, nil, fmt.Errorf(
+				"tuple的foundation实现没找到: %s", tuple)
+		}
+
+		// 实例化实现
+		impl, err := fun()
+		if err != nil {
+			return nil, nil, err
+		}
+
+		// 数据输出目录
+		outputDir := filepath.Join(
+			c.compileDir, fmt.Sprintf("foundation-%s", f.Name))
+
+		// build the context
+		ctx := &foundation.Context{
+			Config: f.Config,
+			Dir:    outputDir,
+			Tuple:  tuple,
+			Shared: context.Shared{
+				Appfile:    c.appfile,
+				InstallDir: filepath.Join(c.dataDir, "binaries."),
+				Directory:  c.dir,
+				Ui:         c.ui,
+			},
+		}
+
+		// 加入到结果中
+		fs = append(fs, impl)
+		ctxs = append(ctxs, ctx)
+	}
+
+	return fs, ctxs, nil
 }
