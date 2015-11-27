@@ -2,6 +2,8 @@ package otto
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"path/filepath"
 
 	"github.com/hashicorp/otto/appfile"
@@ -92,6 +94,31 @@ func (c *Core) Compile() error {
 
 	// 取得所有foundation实现(和infra关联的)
 	foundcations, foundationCtxs, err := c.foundations()
+
+	// 删除之前的output目录
+	log.Printf("[INFO] 删除之前编译的内容：%s", c.compileDir)
+	if err := os.RemoveAll(c.compileDir); err != nil {
+		return err
+	}
+
+	// 编译Infrastructure给应用
+	log.Printf("[INFO] 运行infra编译...")
+	c.ui.Message("编译 infra...")
+	if _, err := infra.Compile(infraCtx); err != nil {
+		return err
+	}
+
+	// 编译foundcation给应用(不关联任何应用)。这个foundcation编译用来
+	// 给`otto infra`设置准备
+	log.Printf("[INFO] 运行foundation编译...")
+	for i, f := range foundcations {
+		ctx := foundationCtxs[i]
+		c.ui.Message(fmt.Sprintf(
+			"编译foundation: %s", ctx.Tuple.Type))
+		if _, err := f.Compile(ctx); err != nil {
+			return err
+		}
+	}
 
 	fmt.Println(infra, infraCtx, foundcations, foundationCtxs)
 
