@@ -23,6 +23,7 @@ func (c *CompileCommand) Run(args []string) int {
 	var flagAppfile string
 	fs := c.FlagSet("compile", FlagSetNone)
 	fs.Usage = func() { c.Ui.Error(c.Help()) }
+	//把参数--appfile的值写入&flagAppfile
 	fs.StringVar(&flagAppfile, "appfile", "", "")
 	if err := fs.Parse(args); err != nil {
 		return 1
@@ -42,7 +43,7 @@ func (c *CompileCommand) Run(args []string) int {
 
 	// 如果没有Appfile，告诉用户发生了什么
 	if app == nil {
-		ui.Header("No Appfile found! Detecting project information...")
+		ui.Header("没有发现Appfile! Detecting project information...")
 		ui.Message(fmt.Sprintf(
 			"No Appfile was found. If there is no Appfile, Otto will do its best\n" +
 				"to detect the type of application this is and set reasonable defaults.\n" +
@@ -189,7 +190,7 @@ func loadAppfile(flagAppfile string) (*appfile.File, string, error) {
 		}
 		return nil, wd, nil
 	}
-	app, err := appfile.ParseFile(appfilePath)
+	app, err := appfile.ParseFile(appfilePath) //解析当前项目目录
 	if err != nil {
 		return nil, "", err
 	}
