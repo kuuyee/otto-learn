@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/otto/appfile"
 	"github.com/hashicorp/otto/appfile/detect"
+	//"github.com/kuuyee/otto-learn/appfile/detect"
 	"github.com/hashicorp/otto/ui"
 	"path/filepath"
 )
@@ -62,7 +63,7 @@ func (c *CompileCommand) Run(args []string) int {
 	detectorDir := filepath.Join(dataDir, DefaultLocalDataDetectorDir)
 	fmt.Printf("[KuuYee]====> detectorDir: %+v\n", detectorDir)
 	log.Printf("[DEBUG] loading detectors from: %s", detectorDir)
-	detectConfig, err := detect.ParseDir(detectorDir)
+	detectConfig, err := detect.ParseDir(detectorDir) //如果没有找到定制配置，则从这里开始分析
 	if err != nil {
 		c.Ui.Error(err.Error())
 		return 1
