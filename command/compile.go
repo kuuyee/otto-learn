@@ -4,20 +4,20 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/hashicorp/otto/appfile"
 	"github.com/hashicorp/otto/appfile/detect"
 	//"github.com/kuuyee/otto-learn/appfile/detect"
 	"github.com/hashicorp/otto/ui"
-	"path/filepath"
 )
 
 // CompileCommand是一个编译命令，要来把
 // Appfile编译成一组数据供其他命令使用
 type CompileCommand struct {
 	Meta
-	Detectors []*detect.Detector
+	Detectors []*detect.Detector //在main.commands.go中初始化
 }
 
 func (c *CompileCommand) Run(args []string) int {
@@ -77,7 +77,10 @@ func (c *CompileCommand) Run(args []string) int {
 		c.Ui.Error(err.Error())
 		return 1
 	}
-	fmt.Printf("[KuuYee]====> detectConfig: %+v\n", detectConfig.Detectors)
+	//打印能够发现的类型
+	for i, v := range detectConfig.Detectors {
+		fmt.Printf("[KuuYee]====> detectConfig %d : %+v\n", i, v)
+	}
 
 	// 装载默认Appfile，我们可以合并任何的默认
 	// appfile到已经装载的Appfile
