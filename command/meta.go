@@ -8,9 +8,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/hashicorp/otto/appfile"
 	"github.com/hashicorp/otto/directory"
 	"github.com/hashicorp/otto/ui"
+	"github.com/kuuyee/otto-learn/appfile"
 	"github.com/kuuyee/otto-learn/otto"
 	"github.com/mitchellh/cli"
 	"github.com/mitchellh/go-homedir"

@@ -8,12 +8,12 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/hashicorp/otto/appfile"
 	"github.com/hashicorp/otto/directory"
 	"github.com/hashicorp/otto/helper/localaddr"
 	"github.com/hashicorp/otto/ui"
 	"github.com/hashicorp/terraform/dag"
 	"github.com/kuuyee/otto-learn/app"
+	"github.com/kuuyee/otto-learn/appfile"
 	"github.com/kuuyee/otto-learn/context"
 	"github.com/kuuyee/otto-learn/foundation"
 	"github.com/kuuyee/otto-learn/infrastructure"

@@ -14,7 +14,7 @@
 package app
 
 import (
-	"github.com/hashicorp/otto/appfile"
+	"github.com/kuuyee/otto-learn/appfile"
 	//"github.com/hashicorp/otto/context"
 	"github.com/hashicorp/otto/ui"
 	"github.com/kuuyee/otto-learn/context"

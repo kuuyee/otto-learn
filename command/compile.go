@@ -7,10 +7,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/hashicorp/otto/appfile"
-	"github.com/hashicorp/otto/appfile/detect"
-	//"github.com/kuuyee/otto-learn/appfile/detect"
+	//"github.com/hashicorp/otto/appfile"
+	"github.com/kuuyee/otto-learn/appfile"
+	//"github.com/hashicorp/otto/appfile/detect"
 	"github.com/hashicorp/otto/ui"
+	"github.com/kuuyee/otto-learn/appfile/detect"
 )
 
 // CompileCommand是一个编译命令，要来把

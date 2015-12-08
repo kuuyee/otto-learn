@@ -10,8 +10,8 @@ import (
 	foundationConsul "github.com/kuuyee/otto-learn/builtin/foundation/consul"
 	infraAws "github.com/kuuyee/otto-learn/builtin/infra/aws"
 
-	"github.com/hashicorp/otto/appfile/detect"
 	"github.com/kuuyee/otto-learn/app"
+	"github.com/kuuyee/otto-learn/appfile/detect"
 	"github.com/kuuyee/otto-learn/command"
 	"github.com/kuuyee/otto-learn/foundation"
 	"github.com/kuuyee/otto-learn/infrastructure"

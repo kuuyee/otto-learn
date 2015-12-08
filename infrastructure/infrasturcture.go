@@ -1,8 +1,8 @@
 package infrastructure
 
 import (
-	"github.com/hashicorp/otto/appfile"
 	"github.com/hashicorp/otto/ui"
+	"github.com/kuuyee/otto-learn/appfile"
 	"github.com/kuuyee/otto-learn/context"
 )
 

@@ -1,5 +1,20 @@
 package appfile
 
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/kuuyee/otto-learn/helper/oneline"
+	"github.com/kuuyee/otto-learn/helper/uuid"
+)
+
+const (
+	IDFile = ".ottoid"
+)
+
 // File对应单个Appfile的结构
 type File struct {
 	// ID是标志这个file的UUID，在第一次编译时生成，否则一直是空
@@ -129,3 +144,71 @@ func (app *Application) Merge(other *Application) {
 		app.Dependencies = other.Dependencies
 	}
 }
+
+// hasID 检查是否有ID文件，如果文件系统错误则直接返回
+func (f *File) hasID() (bool, error) {
+	path := filepath.Join(filepath.Dir(f.Path), IDFile)
+	_, err := os.Stat(path)
+	if err != nil && !os.IsNotExist(err) {
+		return false, err
+	}
+	return err == nil, nil
+}
+
+// initID 创建一个新的UUID并写入文件，这个会覆盖任何原来的ID文件
+func (f *File) initID() error {
+	path := filepath.Join(filepath.Dir(f.Path), IDFile)
+	uuid := uuid.GenerateUUID()
+	data := strings.TrimSpace(fmt.Sprintf(idFileTemplate, uuid)) + "\n"
+	return ioutil.WriteFile(path, []byte(data), 0644)
+}
+
+// loadID 获取这个文件的ID
+func (appF *File) loadID() error {
+	hasID, err := appF.hasID()
+	if err != nil {
+		return err
+	}
+	if !hasID {
+		appF.ID = ""
+		return nil
+	}
+
+	path := filepath.Join(filepath.Dir(appF.Path), IDFile)
+	uuid, err := oneline.Read(path)
+	if err != nil {
+		return err
+	}
+	appF.ID = uuid
+	return nil
+}
+
+//-------------------------------------------------------------------
+// Helper Methods
+//-------------------------------------------------------------------
+
+// ActiveInfrastructure返回一个在Appfile使用的Infrastructure
+func (f *File) ActiveInfrastructure() *Infrastructure {
+	for _, i := range f.Infrastructure {
+		if i.Name == f.Project.Infrastructure {
+			return i
+		}
+	}
+	return nil
+}
+
+const idFileTemplate = `
+%s
+
+DO NOT MODIFY OR DELETE THIS FILE!
+
+This file should be checked in to version control. Do not ignore this file.
+
+The first line is a unique UUID that represents the Appfile in this directory.
+This UUID is used globally across your projects to identify this specific
+Appfile. This UUID allows you to modify the name of an application, or have
+duplicate application names without conflicting.
+
+If you delete this file, then deploys may duplicate this application since
+Otto will be unable to tell that the application is deployed.
+`

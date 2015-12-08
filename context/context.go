@@ -1,9 +1,9 @@
 package context
 
 import (
-	"github.com/hashicorp/otto/appfile"
 	"github.com/hashicorp/otto/directory"
 	"github.com/hashicorp/otto/ui"
+	"github.com/kuuyee/otto-learn/appfile"
 )
 
 // Shared用来在app/infra中共享上下文
