@@ -107,8 +107,9 @@ func (c *Core) Compile() error {
 
 	// 编译Infrastructure给应用
 	log.Printf("[INFO] 运行infra编译...")
-	c.ui.Message("编译 infra...")
+	c.ui.Message("2015-12-09 编译 infra...")
 	if _, err := infra.Compile(infraCtx); err != nil {
+		fmt.Printf("[KuuYee]====> 编译Infra 报错\n")
 		return err
 	}
 
@@ -120,9 +121,12 @@ func (c *Core) Compile() error {
 		c.ui.Message(fmt.Sprintf(
 			"编译foundation: %s", ctx.Tuple.Type))
 		if _, err := f.Compile(ctx); err != nil {
+			fmt.Printf("[KuuYee]====> 编译foundcations 报错\n")
 			return err
 		}
 	}
+
+	fmt.Printf("[KuuYee]====> 编译foundcations 结束\n")
 
 	//排除所有依赖，并全部编译。我们必须编译每个依赖以备
 	//dev构建
@@ -150,7 +154,7 @@ func (c *Core) Compile() error {
 			}
 			resultLock.Unlock()
 		}
-
+		fmt.Printf("[KuuYee]====> root 阶段\n")
 		// 编译！
 		result, err := app.Compile(ctx)
 		if err != nil {

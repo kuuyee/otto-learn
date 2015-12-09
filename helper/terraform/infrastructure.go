@@ -235,7 +235,9 @@ func (i *Infrastructure) execute(ctx *infrastructure.Context, command ...string)
 
 // TODO: test
 func (i *Infrastructure) Compile(ctx *infrastructure.Context) (*infrastructure.CompileResult, error) {
+
 	if err := i.Bindata.CopyDir(ctx.Dir, "data/"+ctx.Infra.Flavor); err != nil {
+		fmt.Printf("[KuuYee]====> 编译terraform 报错\n")
 		return nil, err
 	}
 
