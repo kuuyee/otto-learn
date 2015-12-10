@@ -34,7 +34,7 @@ type File struct {
 	// Imports is the list of imports that this File made. The imports
 	// are realized during compilation, but this list won't be cleared
 	// in case it wants to be inspected later.
-	Import []*Import
+	Imports []*Import
 }
 
 // Application 是定义App的结构
